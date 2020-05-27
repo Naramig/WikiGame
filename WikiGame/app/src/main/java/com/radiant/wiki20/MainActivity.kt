@@ -1,7 +1,5 @@
 package com.radiant.wiki20
 
-import android.content.Context
-import android.database.Cursor
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -15,10 +13,12 @@ import androidx.appcompat.app.AppCompatActivity
 lateinit var webView: WebView
 lateinit var nameOfTheTopic: TextView
 lateinit var numberOfClicks: TextView
-var counter = -2
-var topics: Array<String> = arrayOf("Putin", "Donald Trump")
-var topicsURL = arrayOf("/Vladimir_Putin", "/Donald_Trump")
-var i = 0;
+
+var counter = -2 // -2 because webView opens 2 url before starts
+var indexOfSerchingTopic = -1
+
+val randomPageUrl = "https://en.wikipedia.org/wiki/Special:Random"
+val topics : MutableList<Topic> = arrayListOf()
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,40 +30,60 @@ class MainActivity : AppCompatActivity() {
         numberOfClicks = findViewById(R.id.numberOfClicks_textView)
         webView = findViewById(R.id.webView)
 
-        nameOfTheTopic.text = topics[i]
-        numberOfClicks.text = counter.toString()
+        applySettingsToWEbView()
+        createArrayOfTopics(topics)
+        startNewGame()
 
+
+    }
+
+    private fun applySettingsToWEbView() {
         val webSetting: WebSettings = webView.settings
         webSetting.domStorageEnabled = true
         webSetting.javaScriptEnabled = true
         webView.webViewClient = WebViewClientSubClass()
-        webView.loadUrl("https://en.wikipedia.org/wiki/Special:Random")
     }
+
+    private fun createArrayOfTopics(topics: MutableList<Topic>) {
+        topics.add(Topic("Vladimir Putin", "/Vladimir_Putin"))
+        topics.add(Topic("Donald Trump", "/Donald_Trump"))
+        topics.add(Topic("Sooronbay Jeenbekov", "/Sooronbay_Jeenbekov"))
+        topics.add(Topic("New York City", "/New_York_City"))
+        topics.add(Topic("Kyrgyzstan", "/Kyrgyzstan"))
+        topics.add(Topic("Bill Gates", "/Bill_Gates"))
+        topics.add(Topic("Germany", "/Germany"))
+        topics.add(Topic("Moscow", "/Moscow"))
+        topics.add(Topic("Bishkek", "/Bishkek"))
+        topics.add(Topic("Nuclear weapon", "/Nuclear_weapon"))
+        topics.add(Topic("Munich", "/Munchen"))
+
+    }
+
+
     private class WebViewClientSubClass : WebViewClient() {
         var oldUrl = ""
         override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-            if(url.contains(topicsURL[i])){
+            if(url.contains(topics[indexOfSerchingTopic].url)){
                 nameOfTheTopic.text = "You Won!!!"
-                Log.v("TEST23", url);
-
             }
             if(!oldUrl.equals(url)){
-                ++counter
-                numberOfClicks.text = counter.toString()
-                Log.v("TEST2", url);
-
+                    ++counter
+                if(counter >=0)
+                    numberOfClicks.text = counter.toString()
             }
-            Log.v("TEST", url)
             return false
         }
     }
 
-    fun startNewGame(view: View) {
-        if(topics.size <= i+1) i =0 else i++
+    fun startNewGame() {
+        if(topics.size <= indexOfSerchingTopic+1) indexOfSerchingTopic =0 else indexOfSerchingTopic++
         counter = -2
-        nameOfTheTopic.text = topics[i]
-        numberOfClicks.text = counter.toString()
-        webView.loadUrl("https://en.wikipedia.org/wiki/Special:Random")
+        nameOfTheTopic.text = topics[indexOfSerchingTopic].topic
+        webView.loadUrl(randomPageUrl)
+    }
+
+    fun nextGameButtonListener(view: View){
+        startNewGame()
     }
 
 }
